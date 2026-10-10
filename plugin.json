@@ -1,0 +1,30 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "portal-transparencia-brasil",
+  "version": "0.3.0",
+  "description": "Pesquisa dados públicos do Portal da Transparência do Governo Federal por linguagem natural, por meio de consultas à API oficial da CGU, com validação de filtros, referências de fonte e proteção de credenciais.",
+  "author": {
+    "name": "Gabriel Guimarães Ferreira de Carvalho Ramos",
+    "email": "gabrielgfcramos@gmail.com"
+  },
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Portal da Transparência BR",
+        "shortDescription": "Consulte dados públicos da CGU",
+        "longDescription": "Converte perguntas em linguagem natural em consultas estruturadas à API oficial do Portal da Transparência do Governo Federal, incluindo servidores, remuneração, despesas, contratos, licitações, viagens, convênios, sanções e benefícios. Requer chave individual da API da CGU e execução do servidor MCP em ambiente compatível.",
+        "developerName": "Gabriel Guimarães Ferreira de Carvalho Ramos",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive"
+        ],
+        "defaultPrompt": [
+          "Consulte os contratos do Ministério das Relações Exteriores no Portal da Transparência.",
+          "Pesquise a remuneração de um servidor federal em um mês específico.",
+          "Verifique sanções, licitações e contratos relacionados a uma empresa."
+        ]
+      },
+      "onboardingSkill": "./skills/onboarding/SKILL.md"
+    }
+  }
+}

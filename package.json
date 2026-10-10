@@ -1,0 +1,21 @@
+{
+  "name": "portal-transparencia-brasil",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Servidor MCP de consultas à API oficial da CGU, com catálogo OpenAPI validado",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:offline": "node --test tests/portal.test.mjs tests/openapi.test.mjs tests/http.test.mjs tests/manifest.test.mjs",
+    "start:http": "node server/http.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "jose": "6.2.12",
+    "zod": "4.6.4"
+  }
+}

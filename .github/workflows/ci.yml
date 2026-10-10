@@ -1,0 +1,28 @@
+name: Verify Portal MCP
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Instalar dependências bloqueando scripts de terceiros
+        run: npm ci --ignore-scripts --no-audit --fund=false
+      - name: Validar todo o fluxo MCP (inclui SDK real)
+        run: npm test
+      - name: Verificar sintaxe do runtime
+        run: |
+          node --check server/index.mjs
+          node --check server/http.mjs
+          node --check server/http-core.mjs
+          node --check server/openapi.mjs
+          node --check server/portal.mjs

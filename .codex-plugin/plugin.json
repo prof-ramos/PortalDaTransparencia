@@ -1,0 +1,32 @@
+{
+  "interface": {
+    "displayName": "Portal da Transpar\u00eancia BR",
+    "shortDescription": "Consulte dados p\u00fablicos da CGU",
+    "longDescription": "Converte perguntas em linguagem natural em consultas estruturadas \u00e0 API oficial do Portal da Transpar\u00eancia do Governo Federal, incluindo servidores, remunera\u00e7\u00e3o, despesas, contratos, licita\u00e7\u00f5es, viagens, conv\u00eanios, san\u00e7\u00f5es e benef\u00edcios. Requer chave individual da API da CGU e execu\u00e7\u00e3o do servidor MCP em ambiente compat\u00edvel.",
+    "developerName": "Gabriel Guimar\u00e3es Ferreira de Carvalho Ramos",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Consulte os contratos do Minist\u00e9rio das Rela\u00e7\u00f5es Exteriores no Portal da Transpar\u00eancia.",
+      "Pesquise a remunera\u00e7\u00e3o de um servidor federal em um m\u00eas espec\u00edfico.",
+      "Verifique san\u00e7\u00f5es, licita\u00e7\u00f5es e contratos relacionados a uma empresa."
+    ]
+  },
+  "extensions": {
+    "com.openai": {
+      "onboardingSkill": "./skills/onboarding/SKILL.md"
+    }
+  },
+  "name": "portal-transparencia-brasil",
+  "version": "0.3.0",
+  "description": "Pesquisa dados p\u00fablicos do Portal da Transpar\u00eancia do Governo Federal por linguagem natural, por meio de consultas \u00e0 API oficial da CGU, com valida\u00e7\u00e3o de filtros, refer\u00eancias de fonte e prote\u00e7\u00e3o de credenciais.",
+  "author": {
+    "name": "Gabriel Guimar\u00e3es Ferreira de Carvalho Ramos",
+    "email": "gabrielgfcramos@gmail.com"
+  },
+  "keywords": [],
+  "skills": "./skills",
+  "mcpServers": "./.mcp.json"
+}

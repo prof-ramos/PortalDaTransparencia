@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "public",
+  "installCommand": "npm ci --ignore-scripts",
+  "functions": {
+    "api/mcp.js": { "maxDuration": 60, "includeFiles": "data/portal-openapi.json" }
+  },
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/mcp" },
+    { "source": "/healthz", "destination": "/api/mcp" },
+    { "source": "/.well-known/oauth-protected-resource", "destination": "/api/mcp" },
+    { "source": "/.well-known/oauth-protected-resource/mcp", "destination": "/api/mcp" }
+  ]
+}

@@ -1,0 +1,13 @@
+.env*
+!.env.example
+tests/
+docs/
+outputs/
+skills/
+.github/
+.codex-plugin/
+README.md
+CHANGELOG.md
+plugin.json
+mcp.json
+.mcp.json
