@@ -1,4 +1,8 @@
 import { catalogState, openApiStatus, OFFICIAL_BASE_URL, SNAPSHOT_OPERATION_COUNT } from './openapi.mjs';
+import { setTimeout as delay } from 'node:timers/promises';
+
+// Reserva 15 segundos do limite Vercel para autenticação, inicialização e resposta MCP.
+export const QUERY_TIMEOUT_MS = 45000;
 
 /** API oficial da CGU. Não permite host arbitrário ou URL fornecida pelo usuário. */
 const BASE_URL = OFFICIAL_BASE_URL;
@@ -185,11 +189,13 @@ export function prepareQuery(operation, args={}) {
 
 let queue=Promise.resolve();
 let lastRequestAt=0;
-async function paceRequests() {
+async function paceRequests(signal) {
   const task=queue.then(async()=> {
+    signal.throwIfAborted();
     // No máximo 1 requisição por segundo neste processo; limite conservador.
     const wait=Math.max(0, 1000 - (Date.now()-lastRequestAt));
-    if (wait) await new Promise(resolve => setTimeout(resolve,wait));
+    if (wait) await delay(wait, undefined, { signal });
+    signal.throwIfAborted();
     lastRequestAt=Date.now();
   });
   queue=task.catch(()=>{});
@@ -201,10 +207,11 @@ function safeErrorText(text,key) {
   return redact(s).replace(/(?<!\d)\d{11}(?!\d)/g,'[IDENTIFICADOR]').replace(/https?:\/\/[^\s"']+/g,'[URL ocultada]');
 }
 
-async function getJSON(url,key,fetchFn,pace) {
+async function getJSON(url,key,fetchFn,pace,querySignal) {
   for (let attempt=0;attempt<3;attempt++) {
-    if (pace) await paceRequests();
-    const signal=AbortSignal.timeout(20000);
+    querySignal.throwIfAborted();
+    if (pace) await paceRequests(querySignal);
+    const signal=AbortSignal.any([querySignal, AbortSignal.timeout(20000)]);
     let response;
     try { response=await fetchFn(url,{method:'GET',headers:{'Accept':'application/json','chave-api-dados':key},signal}); }
     catch (e) {
@@ -214,7 +221,7 @@ async function getJSON(url,key,fetchFn,pace) {
     if (response.status===429 && attempt<2) {
       let wait=Number(response.headers?.get?.('Retry-After'));
       if (!Number.isFinite(wait) || wait<1 || wait>10) wait=attempt+1;
-      await new Promise(resolve=>setTimeout(resolve,wait*1000));
+      await delay(wait*1000, undefined, { signal: querySignal });
       continue;
     }
     if (response.status===401 || response.status===403) throw new Error('Chave da API rejeitada ou acesso proibido (HTTP 401/403). Verifique TRANSPARENCIA_API_KEY.');
@@ -228,6 +235,20 @@ async function getJSON(url,key,fetchFn,pace) {
 }
 
 export async function queryPortal({ operacao, parametros={}, pagina_inicial=1, max_paginas=1, limite_registros=50 }={}, options={}) {
+  const timeoutMs = options.timeoutMs ?? QUERY_TIMEOUT_MS;
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > QUERY_TIMEOUT_MS) {
+    throw new Error('Prazo da consulta inválido.');
+  }
+  const querySignal = AbortSignal.timeout(timeoutMs);
+  try {
+    return await runQuery({ operacao, parametros, pagina_inicial, max_paginas, limite_registros }, options, querySignal);
+  } catch (error) {
+    if (querySignal.aborted) throw new Error('Prazo total da consulta excedido (45 segundos no máximo). Reduza max_paginas ou divida os filtros em consultas menores.');
+    throw error;
+  }
+}
+
+async function runQuery({ operacao, parametros, pagina_inicial, max_paginas, limite_registros }, options, querySignal) {
   if (!Number.isInteger(pagina_inicial) || pagina_inicial<1 || pagina_inicial>100000) throw new Error('pagina_inicial deve estar entre 1 e 100000.');
   if (!Number.isInteger(max_paginas) || max_paginas<1 || max_paginas>5) throw new Error('max_paginas deve estar entre 1 e 5.');
   if (!Number.isInteger(limite_registros) || limite_registros<1 || limite_registros>200) throw new Error('limite_registros deve estar entre 1 e 200.');
@@ -244,7 +265,7 @@ export async function queryPortal({ operacao, parametros={}, pagina_inicial=1, m
     else if (i>0) break;
     const url=new URL(path,BASE_URL);
     url.search=thisQuery.toString();
-    const body=await getJSON(url,key,fetchFn,pace);
+    const body=await getJSON(url,key,fetchFn,pace,querySignal);
     pagesRead++;
     if (Array.isArray(body)) {
       records.push(...body.slice(0, Math.max(0, limite_registros-records.length)));
