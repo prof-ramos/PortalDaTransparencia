@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Servidor MCP de consultas à API oficial da CGU, com catálogo OpenAPI validado",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.3"
   },
   "scripts": {
     "start": "node server/index.mjs",
