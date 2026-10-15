@@ -56,3 +56,21 @@ test('prazo não pode exceder o orçamento de produção', async () => {
   assert.equal(QUERY_TIMEOUT_MS, 45000);
   await assert.rejects(queryPortal(args, { timeoutMs: 60000 }), /Prazo da consulta inválido/);
 });
+
+
+test('prazo global cancela consulta ainda aguardando sua vez na fila', { timeout: 5000 }, async () => {
+  let calls = 0;
+  const fetchFn = async () => { calls++; return new Response('[]', { status: 200, headers: { 'content-type': 'application/json' } }); };
+  const request = { operacao: 'orgaosSiafi' };
+  await queryPortal(request, { apiKey: 'fake', fetchFn, timeoutMs: 3000 });
+  const queued = queryPortal(request, { apiKey: 'fake', fetchFn, timeoutMs: 3000 });
+  let callsAtDeadline;
+  try {
+    await assert.rejects(queryPortal(request, { apiKey: 'fake', fetchFn, timeoutMs: 50 }), /Prazo total/);
+    callsAtDeadline = calls;
+  } finally {
+    await queued;
+  }
+  assert.equal(callsAtDeadline, 1, 'o prazo deve vencer antes de a consulta anterior sair da fila');
+  assert.equal(calls, 2, 'a consulta não vencida deve continuar normalmente');
+});

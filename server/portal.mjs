@@ -190,6 +190,7 @@ export function prepareQuery(operation, args={}) {
 let queue=Promise.resolve();
 let lastRequestAt=0;
 async function paceRequests(signal) {
+  signal.throwIfAborted();
   const task=queue.then(async()=> {
     signal.throwIfAborted();
     // No máximo 1 requisição por segundo neste processo; limite conservador.
@@ -199,7 +200,18 @@ async function paceRequests(signal) {
     lastRequestAt=Date.now();
   });
   queue=task.catch(()=>{});
-  await task;
+  // O prazo também deve interromper a espera anterior ao início do callback.
+  let onAbort;
+  const cancelled=new Promise((_,reject)=> {
+    onAbort=()=>reject(signal.reason);
+    signal.addEventListener('abort',onAbort,{once:true});
+    if (signal.aborted) onAbort();
+  });
+  try {
+    await Promise.race([task,cancelled]);
+  } finally {
+    signal.removeEventListener('abort',onAbort);
+  }
 }
 function safeErrorText(text,key) {
   let s=String(text ?? '').slice(0,500);
