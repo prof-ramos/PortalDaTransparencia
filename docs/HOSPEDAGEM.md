@@ -54,6 +54,16 @@ O ambiente 1Password não sincroniza automaticamente com a Vercel. A implantaç�
 
 Somente `public/` é servido como conteúdo estático. Código, catálogo, manifestos e testes não devem ser servidos por URLs estáticas. O snapshot OpenAPI é incluído apenas no pacote da função. Limite de corpo: 1 MiB. Respostas MCP não são armazenadas em cache.
 
+As consultas têm prazo total de 45 segundos, incluindo fila de pacing, páginas, Retry-After e leitura do corpo HTTP. Cada tentativa mantém o limite adicional de 20 segundos. Ao exceder o prazo, a conexão é abortada e a ferramenta retorna erro controlado, sem apresentar páginas já lidas como uma consulta concluída. A margem de 15 segundos em relação à função de 60 segundos acomoda autenticação e resposta MCP; não garante conclusão sob qualquer atraso de inicialização da plataforma.
+
+## Revisão local — 10/10/2026
+
+Problema confirmado: cinco páginas com respostas individuais abaixo de 20 segundos podiam superar os 60 segundos da Vercel. O prazo global de consulta acima foi implementado localmente e não publicado.
+
+Validação: `node --test --test-concurrency=1 tests/*.test.mjs` passou com 34 testes, sem skips. Os sete testes de OAuth e prazo também passaram no Node 20. Os testes de prazo usam fetch e servidor HTTP local reais, incluindo cancelamento da segunda página, espera Retry-After e corpo incompleto. Não usam credenciais CGU nem comprovam login ChatGPT. Uma execução paralela sob carga falhou no prazo de inicialização do teste stdio existente; a execução sequencial completa passou.
+
+Código inicial publicado no repositório público `prof-ramos/PortalDaTransparencia`, com correção de prazo separada na branch `fix/query-timeout-budget` para revisão em PR draft. Credenciais, `.vercel`, dependências instaladas e outputs não fazem parte do repositório. Nenhum merge ou deploy foi realizado nesta revisão.
+
 O pacing de consultas existente é por instância; ele não implementa um limite global entre instâncias Vercel. Para o uso individual, começar com os limites existentes (até cinco páginas por chamada), observar a quota CGU e só adicionar armazenamento/limitação distribuída se houver necessidade comprovada.
 
 ## Referências

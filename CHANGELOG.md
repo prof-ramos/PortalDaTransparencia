@@ -2,6 +2,8 @@
 
 ## Alterações locais — 2026-10-10 (sobre 0.3.0)
 
+- Revisão: prazo global de 45 segundos para consultas, com cancelamento de páginas, Retry-After e leitura de corpo, compatível com a função Vercel de 60 segundos. Quatro novos testes HTTP reais locais; suíte completa de 34 testes aprovada sequencialmente e testes OAuth/prazo aprovados também no Node 20. Correção ainda não publicada.
+- Ambiente 1Password `Portal da Transparência — Produção` criado com três URLs públicas. Chave CGU e identidade do proprietário continuam pendentes.
 
 - Adaptação Vercel com descoberta OAuth, validação JWT e restrição ao proprietário; nova dependência `jose` fixada no lockfile.
 - Testes OAuth elevam a suíte a 30 testes aprovados. Configuração do provedor e homologação ChatGPT permanecem pendentes.

@@ -9,7 +9,7 @@ Plugin independente para consultar **dados públicos do Portal da Transparência
 - SDK MCP oficial `@modelcontextprotocol/server` **2.3.1**, transporte local **stdio** e transporte **HTTP stateless** pelo mesmo `buildServer` e SDK `createMcpHandler`, compatíveis com versões modernas/legadas do protocolo.
 - Validação de rotas e parâmetros, máscara de CPF/NIS, limites de consulta (até 5 páginas/200 registros), rate pacing (~1 solicitação/segundo) e controle de atualização OpenAPI.
 - Onboarding ChatGPT declarado em `plugin.json` em `skills/onboarding/SKILL.md`.
-- Node.js **20+** no runtime; Node.js 22 LTS recomendado.
+- Node.js **20.3+** no runtime; Node.js 22 LTS recomendado.
 
 ## Instalação local
 
